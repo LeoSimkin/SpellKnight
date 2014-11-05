@@ -51,6 +51,13 @@ public class BookManagerScript : MonoBehaviour {
 
 		GUI.EndGroup ();
 
+		//temporary control button
+		GUI.BeginGroup (new Rect (100, 100, 100, 100));
+		if (GUI.Button (new Rect (0, 0, 100, 100), "Clear")) {
+			clearBuffer();		
+		}
+		GUI.EndGroup ();
+
 		       
 
 
@@ -95,5 +102,9 @@ public class BookManagerScript : MonoBehaviour {
 					gridArray [i, j] = getLetter ();
 			}
 		}
+	}
+
+	public void clearBuffer(){
+		wordBuffer = "";
 	}
 }
