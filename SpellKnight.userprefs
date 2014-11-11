@@ -1,8 +1,9 @@
 ﻿<Properties>
-  <MonoDevelop.Ide.Workspace ActiveConfiguration="Debug" PreferredExecutionTarget="MonoDevelop.Default" />
+  <MonoDevelop.Ide.Workspace ActiveConfiguration="Debug" />
   <MonoDevelop.Ide.Workbench ActiveDocument="Assets\Scripts\BookManagerScript.cs">
     <Files>
-      <File FileName="Assets\Scripts\BookManagerScript.cs" Line="57" Column="18" />
+      <File FileName="Assets\Scripts\Dictionary.cs" Line="14" Column="2" />
+      <File FileName="Assets\Scripts\BookManagerScript.cs" Line="64" Column="23" />
     </Files>
   </MonoDevelop.Ide.Workbench>
   <MonoDevelop.Ide.DebuggingService.Breakpoints>

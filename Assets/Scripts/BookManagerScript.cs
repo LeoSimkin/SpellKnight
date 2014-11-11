@@ -4,12 +4,13 @@ using System.Collections;
 public class BookManagerScript : MonoBehaviour {
 
 	bool bookStateGrid = false; // False = Map, True = grid 
-	char[,] gridArray = new char[6,5]; // [0,0] being bottom left corner, [5,4] being top right
+	char[,] gridArray = new char[6,5]; // [0,0] being top left corner, [5,4] being bottom right
 	string wordBuffer = ""; // letters go here to build a word.
 	float buttonSize = 0f;
 	float bookTopBottomBuffer = 0f;
 	int guiFontSize = 20;
 	string allLetters = "AAAAAAAAABBCCDDDDEEEEEEEEEEEEFFGGGHHIIIIIIIIIJKLLLLMMNNNNNNOOOOOOOOPPQRRRRRRSSSSTTTTTTUUUUVVWWXYYZ";
+	Dictionary dictionary;
 
 
 	public Texture2D bookBG;
@@ -27,7 +28,7 @@ public class BookManagerScript : MonoBehaviour {
 		bookTopBottomBuffer = ((Screen.height / 2) - ((5 * buttonSize) + (10 * 4))) / 2;
 		letterDisplayHeight = buttonSize * 3/4;
 		guiFontSize = Screen.width / 10;
-
+		dictionary = new Dictionary();
 
 		populateGrid ();
 
@@ -52,9 +53,16 @@ public class BookManagerScript : MonoBehaviour {
 		GUI.EndGroup ();
 
 		//temporary control button
-		GUI.BeginGroup (new Rect (100, 100, 100, 100));
+		GUI.BeginGroup (new Rect (Screen.width/4, 100, Screen.width/2, 100));
 		if (GUI.Button (new Rect (0, 0, 100, 100), "Clear")) {
 			clearBuffer();		
+		}
+		if (GUI.Button (new Rect (Screen.width/2 - 100, 0, 100, 100), "Submit")) {
+			if (dictionary.contains(wordBuffer)){
+				wordBuffer = "YES";
+			}else{
+				wordBuffer = "NO";
+			}
 		}
 		GUI.EndGroup ();
 
@@ -89,6 +97,7 @@ public class BookManagerScript : MonoBehaviour {
 
 		GUI.EndGroup ();
 	}
+
 
 	char getLetter(){
 		char letter = allLetters[Random.Range (0,allLetters.Length)]; 
