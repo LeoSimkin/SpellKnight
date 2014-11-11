@@ -5,12 +5,15 @@ public class BookManagerScript : MonoBehaviour {
 
 	bool bookStateGrid = false; // False = Map, True = grid 
 	char[,] gridArray = new char[6,5]; // [0,0] being top left corner, [5,4] being bottom right
+	bool[,] gridArrayIsSelected = new bool[6, 5]; //if true, the letter has been selected and should be glowing
+
 	string wordBuffer = ""; // letters go here to build a word.
 	float buttonSize = 0f;
 	float bookTopBottomBuffer = 0f;
 	int guiFontSize = 20;
 	string allLetters = "AAAAAAAAABBCCDDDDEEEEEEEEEEEEFFGGGHHIIIIIIIIIJKLLLLMMNNNNNNOOOOOOOOPPQRRRRRRSSSSTTTTTTUUUUVVWWXYYZ";
 	Dictionary dictionary;
+	GUIStyle buttonStyle;
 
 
 	public Texture2D bookBG;
@@ -18,6 +21,7 @@ public class BookManagerScript : MonoBehaviour {
 	public float letterDisplayHeight = 10f;
 	public GUISkin bookSkin;
 	public GUISkin skin1;
+	public GUIStyle highlightedLetter;
 	//public float letterDisplayScreenHeight = 0f;
 
 
@@ -28,9 +32,12 @@ public class BookManagerScript : MonoBehaviour {
 		bookTopBottomBuffer = ((Screen.height / 2) - ((5 * buttonSize) + (10 * 4))) / 2;
 		letterDisplayHeight = buttonSize * 3/4;
 		guiFontSize = Screen.width / 10;
+		buttonStyle = bookSkin.button;
+
 		dictionary = new Dictionary();
 
 		populateGrid ();
+		clearBoolGrid ();
 
 	}
 	
@@ -40,7 +47,7 @@ public class BookManagerScript : MonoBehaviour {
 	}
 
 	void OnGUI () {
-
+		//buttonStyle = bookSkin.button;
 
 
 		//letter display
@@ -78,22 +85,38 @@ public class BookManagerScript : MonoBehaviour {
 
 		for (int i = 0; i < 6; i++) {
 			for (int j = 0; j < 5; j++){
-				if(GUI.Button (new Rect (10 + (i * (buttonSize+10)), bookTopBottomBuffer + (j * (buttonSize+10)) , buttonSize, buttonSize), gridArray[i,j].ToString() )){
-					//append element to wordBuffer
-					wordBuffer += gridArray[i,j];
+				//change button style based on gridArrayIsSelected
+				if (gridArrayIsSelected[i,j] == true){
+					buttonStyle = highlightedLetter;
+				}
+				else{
+					buttonStyle = bookSkin.button;
+				}
 
+				if(GUI.Button (new Rect (10 + (i * (buttonSize+10)), bookTopBottomBuffer + (j * (buttonSize+10)) , buttonSize, buttonSize), gridArray[i,j].ToString(), buttonStyle )){
+					//append element to wordBuffer
+					if(gridArrayIsSelected[i,j] == true){
+						wordBuffer = wordBuffer.Remove(wordBuffer.Length -1);
+					}
+					else {
+						wordBuffer += gridArray[i,j];
+					}
+
+					gridArrayIsSelected[i,j] = !gridArrayIsSelected[i,j];
+			
+
+
+					/*
 					//move all elements down
 					for(int k = j; k > 0; k--){
 						gridArray[i,k] = gridArray[i,k-1];
 					}
 					//add new letter at top of column
 					gridArray[i,0] = getLetter();
+					*/
 				}
 			}
 		}
-
-
-		//GUI.Button (new Rect (10, 10, buttonSize, buttonSize), "S");
 
 		GUI.EndGroup ();
 	}
@@ -113,7 +136,51 @@ public class BookManagerScript : MonoBehaviour {
 		}
 	}
 
+	void clearBoolGrid(){
+		for (int i = 0; i<6; i++) {
+			for (int j = 0; j<5; j++) {
+				gridArrayIsSelected[i,j] = false;
+			}
+		}
+	}
+
+	bool generateValidZone(int row, int col){
+		int leftBound = 1;
+		int rightBound = 1;
+		int topBound = 1; 
+		int bottomBound = 1;
+
+		if (row == 0){
+			leftBound = 0;
+		}
+
+		if(row == 5) {
+			rightBound = 0;
+		}
+
+		if (col == 0) {
+			topBound = 0;		
+		}
+
+		if (col == 4) {
+			bottomBound = 0;		
+		}
+
+		for (int i = (row - leftBound); i <= (row + rightBound); i++) {
+			for (int j = col - topBound; j <= col + bottomBound; j++){
+				if (gridArrayIsSelected[i,j] == true){
+					return true;
+				}
+			}
+		}
+
+		return false;
+	}
+
 	public void clearBuffer(){
 		wordBuffer = "";
 	}
+
+
+
 }
