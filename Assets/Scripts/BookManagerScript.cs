@@ -12,7 +12,7 @@ public class BookManagerScript : MonoBehaviour {
 	float bookTopBottomBuffer = 0f;
 	int guiFontSize = 20;
 	string allLetters = "AAAAAAAAABBCCDDDDEEEEEEEEEEEEFFGGGHHIIIIIIIIIJKLLLLMMNNNNNNOOOOOOOOPPQRRRRRRSSSSTTTTTTUUUUVVWWXYYZ";
-	Dictionary dictionary;
+	public Dictionary dictionary;
 	GUIStyle buttonStyle;
 
 
@@ -33,8 +33,6 @@ public class BookManagerScript : MonoBehaviour {
 		letterDisplayHeight = buttonSize * 3/4;
 		guiFontSize = Screen.width / 10;
 		buttonStyle = bookSkin.button;
-
-		dictionary = new Dictionary();
 
 		populateGrid ();
 		clearBoolGrid ();
@@ -62,13 +60,30 @@ public class BookManagerScript : MonoBehaviour {
 		//temporary control button
 		GUI.BeginGroup (new Rect (Screen.width/4, 100, Screen.width/2, 100));
 		if (GUI.Button (new Rect (0, 0, 100, 100), "Clear")) {
-			clearBuffer();		
+			clearBuffer();	
+			clearBoolGrid();
 		}
 		if (GUI.Button (new Rect (Screen.width/2 - 100, 0, 100, 100), "Submit")) {
 			if (dictionary.contains(wordBuffer)){
-				wordBuffer = "YES";
+				// can consolidate following code into a clearWord function
+				clearBuffer();
+				for (int i = 0; i < 6; i++) {
+					for (int j = 0; j < 5; j++){
+						if (gridArrayIsSelected[i,j] == true) {
+							//move all elements down
+							for(int k = j; k > 0; k--){
+								gridArray[i,k] = gridArray[i,k-1];
+							}
+							//add new letter at top of column
+							gridArray[i,0] = getLetter();
+						}
+					}
+				}
+				clearBoolGrid ();
 			}else{
+				//placeholder for failed word effect
 				wordBuffer = "NO";
+				clearBoolGrid();
 			}
 		}
 		GUI.EndGroup ();
@@ -96,7 +111,11 @@ public class BookManagerScript : MonoBehaviour {
 				if(GUI.Button (new Rect (10 + (i * (buttonSize+10)), bookTopBottomBuffer + (j * (buttonSize+10)) , buttonSize, buttonSize), gridArray[i,j].ToString(), buttonStyle )){
 					//append element to wordBuffer
 					if(gridArrayIsSelected[i,j] == true){
-						wordBuffer = wordBuffer.Remove(wordBuffer.Length -1);
+						int index = wordBuffer.IndexOf(gridArray[i,j]);
+						while (wordBuffer.IndexOf(gridArray[i,j], index+1) > -1) {
+							index = wordBuffer.IndexOf(gridArray[i,j], index+1);
+						}
+						wordBuffer = wordBuffer.Remove(index, 1);
 					}
 					else {
 						wordBuffer += gridArray[i,j];
