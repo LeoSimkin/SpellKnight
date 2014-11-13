@@ -12,8 +12,12 @@ public class BookManagerScript : MonoBehaviour {
 	float bookTopBottomBuffer = 0f;
 	int guiFontSize = 20;
 	string allLetters = "AAAAAAAAABBCCDDDDEEEEEEEEEEEEFFGGGHHIIIIIIIIIJKLLLLMMNNNNNNOOOOOOOOPPQRRRRRRSSSSTTTTTTUUUUVVWWXYYZ";
-	public Dictionary dictionary;
 	GUIStyle buttonStyle;
+	bool firstLetterSelected = false;
+	int lastI = -1; //integers to keep track of current and previously clicked letters
+	int lastJ = -1;
+	int prevI = -1;
+	int prevJ = -1;
 
 
 	public Texture2D bookBG;
@@ -22,6 +26,7 @@ public class BookManagerScript : MonoBehaviour {
 	public GUISkin bookSkin;
 	public GUISkin skin1;
 	public GUIStyle highlightedLetter;
+	public GameObject dictionary;
 	//public float letterDisplayScreenHeight = 0f;
 
 
@@ -64,7 +69,7 @@ public class BookManagerScript : MonoBehaviour {
 			clearBoolGrid();
 		}
 		if (GUI.Button (new Rect (Screen.width/2 - 100, 0, 100, 100), "Submit")) {
-			if (dictionary.contains(wordBuffer)){
+			if (dictionary.GetComponent<Dictionary>().contains(wordBuffer)){//dictionary.contains(wordBuffer)){
 				// can consolidate following code into a clearWord function
 				clearBuffer();
 				for (int i = 0; i < 6; i++) {
@@ -107,21 +112,28 @@ public class BookManagerScript : MonoBehaviour {
 				else{
 					buttonStyle = bookSkin.button;
 				}
-
+				//specific letter button
 				if(GUI.Button (new Rect (10 + (i * (buttonSize+10)), bookTopBottomBuffer + (j * (buttonSize+10)) , buttonSize, buttonSize), gridArray[i,j].ToString(), buttonStyle )){
 					//append element to wordBuffer
-					if(gridArrayIsSelected[i,j] == true){
+					if(gridArrayIsSelected[i,j] == true){ //remove last letter from word buffer
 						int index = wordBuffer.IndexOf(gridArray[i,j]);
 						while (wordBuffer.IndexOf(gridArray[i,j], index+1) > -1) {
 							index = wordBuffer.IndexOf(gridArray[i,j], index+1);
 						}
 						wordBuffer = wordBuffer.Remove(index, 1);
 					}
-					else {
+					else { //add letter to wordbuffer
 						wordBuffer += gridArray[i,j];
 					}
 
 					gridArrayIsSelected[i,j] = !gridArrayIsSelected[i,j];
+
+					prevI = lastI;
+					prevJ = lastJ;
+					Debug.Log("Prev Selected: [" + prevI + "," + prevJ + "]");
+					lastI = i;
+					lastJ = j;
+					Debug.Log("Last Selected: [" + lastI + "," + lastJ + "]");
 			
 
 

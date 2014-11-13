@@ -362,7 +362,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 65b5b5a788fa6474a8f97a4b8a33da2d, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  dictionary: {fileID: 1294243520}
   bookBG: {fileID: 2800000, guid: 2a29baf37613b744db795c1f90302c95, type: 3}
   letterDisplayWidth: 300
   letterDisplayHeight: 40
@@ -427,6 +426,7 @@ MonoBehaviour:
     m_FixedHeight: 0
     m_StretchWidth: 1
     m_StretchHeight: 0
+  dictionary: {fileID: 1294243518}
 --- !u!4 &1436182491
 Transform:
   m_ObjectHideFlags: 0
