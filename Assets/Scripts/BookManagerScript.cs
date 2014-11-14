@@ -15,12 +15,9 @@ public class BookManagerScript : MonoBehaviour {
 	GUIStyle buttonStyle;
 	bool firstLetterSelected = false;
 
-	int[,] selectionStack = new int[30, 2];
+	int[,] selectionStack = new int[30, 2]; // stack to keep track of order of letters
 	int selectionStackIndex = 0;
-	int lastI = -1; //integers to keep track of current and previously clicked letters
-	int lastJ = -1;
-	int prevI = -1;
-	int prevJ = -1;
+
 
 
 	public Texture2D bookBG;
@@ -29,8 +26,9 @@ public class BookManagerScript : MonoBehaviour {
 	public GUISkin bookSkin;
 	public GUISkin skin1;
 	public GUIStyle highlightedLetter;
+	public GUIStyle selectedLetter;
 	public GameObject dictionary;
-	//public float letterDisplayScreenHeight = 0f;
+
 
 
 	// Use this for initialization
@@ -66,11 +64,12 @@ public class BookManagerScript : MonoBehaviour {
 
 		GUI.EndGroup ();
 
-		//temporary control button
+		//temporary control buttons
 		GUI.BeginGroup (new Rect (Screen.width/4, 100, Screen.width/2, 100));
 		if (GUI.Button (new Rect (0, 0, 100, 100), "Clear")) {
 			clearBuffer();	
 			clearBoolGrid();
+			initSelectionStack();
 		}
 		if (GUI.Button (new Rect (Screen.width/2 - 100, 0, 100, 100), "Submit")) {
 			if (dictionary.GetComponent<Dictionary>().contains(wordBuffer)){//dictionary.contains(wordBuffer)){
@@ -94,6 +93,7 @@ public class BookManagerScript : MonoBehaviour {
 				wordBuffer = "NO";
 				clearBoolGrid();
 			}
+			initSelectionStack();
 		}
 		GUI.EndGroup ();
 
@@ -103,6 +103,7 @@ public class BookManagerScript : MonoBehaviour {
 		//book grid
 		GUI.skin = bookSkin;
 		bookSkin.button.fontSize = guiFontSize;
+
 		GUI.BeginGroup (new Rect (0, Screen.height / 2, Screen.width, Screen.height / 2));
 
 		GUI.Box (new Rect (0, 0, Screen.width, Screen.height / 2), "");
@@ -111,58 +112,40 @@ public class BookManagerScript : MonoBehaviour {
 			for (int j = 0; j < 5; j++){
 				//change button style based on gridArrayIsSelected
 				if (gridArrayIsSelected[i,j] == true){
-					buttonStyle = highlightedLetter;
+
+					if (i==getLastI() && j == getLastJ()){
+						buttonStyle = highlightedLetter;
+						buttonStyle.fontSize = guiFontSize;
+					}
+					else{
+						buttonStyle = selectedLetter;
+						buttonStyle.fontSize = guiFontSize;
+					}
 				}
 				else{
 					buttonStyle = bookSkin.button;
 				}
 				//specific letter button
 				if(GUI.Button (new Rect (10 + (i * (buttonSize+10)), bookTopBottomBuffer + (j * (buttonSize+10)) , buttonSize, buttonSize), gridArray[i,j].ToString(), buttonStyle )){
-					//check if this is even a valid button to press
-					//if (isValid(i,j)){
 
-						//append element to wordBuffer
-						if(gridArrayIsSelected[i,j] == true){ //remove last letter from word buffer
-							/*
-							int index = wordBuffer.IndexOf(gridArray[i,j]);
-							while (wordBuffer.IndexOf(gridArray[i,j], index+1) > -1) {
-								index = wordBuffer.IndexOf(gridArray[i,j], index+1);
-							}
-							wordBuffer = wordBuffer.Remove(index, 1);
-							*/
-							if(i == getLastI() && j == getLastJ()){
-								wordBuffer = wordBuffer.Remove(wordBuffer.Length - 1, 1);
-								popButtonFromStack();
-								gridArrayIsSelected[i,j] = !gridArrayIsSelected[i,j];
-							}
-						}
-						else if (isValid(i,j) && gridArrayIsSelected[i,j] == false) { //add letter to wordbuffer
-							wordBuffer += gridArray[i,j];
-							pushButtonToStack(i,j);
+					//append element to wordBuffer
+					if(gridArrayIsSelected[i,j] == true){ //remove last letter from word buffer
+
+						if(i == getLastI() && j == getLastJ()){
+							wordBuffer = wordBuffer.Remove(wordBuffer.Length - 1, 1);
+							popButtonFromStack();
 							gridArrayIsSelected[i,j] = !gridArrayIsSelected[i,j];
+
 						}
 
-						
+					}
+					else if (isValid(i,j) && gridArrayIsSelected[i,j] == false) { //add letter to wordbuffer
+						wordBuffer += gridArray[i,j];
+						pushButtonToStack(i,j);
+						gridArrayIsSelected[i,j] = !gridArrayIsSelected[i,j];
 
-						/*
-						prevI = lastI;
-						prevJ = lastJ;
-						Debug.Log("Prev Selected: [" + prevI + "," + prevJ + "]");
-						lastI = i;
-						lastJ = j;
-						Debug.Log("Last Selected: [" + lastI + "," + lastJ + "]");
-						*/
+					}
 
-
-						/*
-						//move all elements down
-						for(int k = j; k > 0; k--){
-							gridArray[i,k] = gridArray[i,k-1];
-						}
-						//add new letter at top of column
-						gridArray[i,0] = getLetter();
-						*/
-					//}
 				}
 			}
 		}
@@ -199,7 +182,6 @@ public class BookManagerScript : MonoBehaviour {
 	bool isValid(int row, int col){
 		//first letter is always valid
 		if (firstLetterSelected == false){
-			Debug.Log("This is the first letter selected");
 			return true;
 		}
 
@@ -229,12 +211,10 @@ public class BookManagerScript : MonoBehaviour {
 		for (int i = (row - leftBound); i <= (row + rightBound); i++) {
 			for (int j = col - topBound; j <= col + bottomBound; j++){
 				if (i == getLastI() && j == getLastJ()){
-					Debug.Log("[" + row + "," + col + "] is valid by virtue of [" + getLastI() + "," + getLastJ() + "]");
 					return true;
 				}
 			}
 		}
-		Debug.Log("[" + row + "," + col + "] is NOT valid");
 		return false;
 	}
 
@@ -259,19 +239,31 @@ public class BookManagerScript : MonoBehaviour {
 	}
 
 	int getLastI(){
-		return selectionStack [selectionStackIndex - 1, 0];
+		if (selectionStackIndex == 0){
+			return -1;
+		}
+		else{
+			return selectionStack [selectionStackIndex - 1, 0];
+		}
 	}
 
 	int getLastJ(){
-		return selectionStack [selectionStackIndex - 1, 1];
+		if (selectionStackIndex == 0) {
+			return -1;
+		}
+		else {
+			return selectionStack [selectionStackIndex - 1, 1];
+		}
 	}
 
-
+	//clears the selectionStack and resets the index
 	void initSelectionStack(){
 		for (int i = 0; i<30; i++) {
 			selectionStack [i, 0] = -1;
 			selectionStack [i, 1] = -1;	
 		}
+		selectionStackIndex = 0;
+		firstLetterSelected = false;
 	}
 
 	public void clearBuffer(){
