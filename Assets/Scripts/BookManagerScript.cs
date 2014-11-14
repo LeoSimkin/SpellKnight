@@ -14,6 +14,9 @@ public class BookManagerScript : MonoBehaviour {
 	string allLetters = "AAAAAAAAABBCCDDDDEEEEEEEEEEEEFFGGGHHIIIIIIIIIJKLLLLMMNNNNNNOOOOOOOOPPQRRRRRRSSSSTTTTTTUUUUVVWWXYYZ";
 	GUIStyle buttonStyle;
 	bool firstLetterSelected = false;
+
+	int[,] selectionStack = new int[30, 2];
+	int selectionStackIndex = 0;
 	int lastI = -1; //integers to keep track of current and previously clicked letters
 	int lastJ = -1;
 	int prevI = -1;
@@ -41,6 +44,7 @@ public class BookManagerScript : MonoBehaviour {
 
 		populateGrid ();
 		clearBoolGrid ();
+		initSelectionStack ();
 
 	}
 	
@@ -114,37 +118,51 @@ public class BookManagerScript : MonoBehaviour {
 				}
 				//specific letter button
 				if(GUI.Button (new Rect (10 + (i * (buttonSize+10)), bookTopBottomBuffer + (j * (buttonSize+10)) , buttonSize, buttonSize), gridArray[i,j].ToString(), buttonStyle )){
-					//append element to wordBuffer
-					if(gridArrayIsSelected[i,j] == true){ //remove last letter from word buffer
-						int index = wordBuffer.IndexOf(gridArray[i,j]);
-						while (wordBuffer.IndexOf(gridArray[i,j], index+1) > -1) {
-							index = wordBuffer.IndexOf(gridArray[i,j], index+1);
+					//check if this is even a valid button to press
+					//if (isValid(i,j)){
+
+						//append element to wordBuffer
+						if(gridArrayIsSelected[i,j] == true){ //remove last letter from word buffer
+							/*
+							int index = wordBuffer.IndexOf(gridArray[i,j]);
+							while (wordBuffer.IndexOf(gridArray[i,j], index+1) > -1) {
+								index = wordBuffer.IndexOf(gridArray[i,j], index+1);
+							}
+							wordBuffer = wordBuffer.Remove(index, 1);
+							*/
+							if(i == getLastI() && j == getLastJ()){
+								wordBuffer = wordBuffer.Remove(wordBuffer.Length - 1, 1);
+								popButtonFromStack();
+								gridArrayIsSelected[i,j] = !gridArrayIsSelected[i,j];
+							}
 						}
-						wordBuffer = wordBuffer.Remove(index, 1);
-					}
-					else { //add letter to wordbuffer
-						wordBuffer += gridArray[i,j];
-					}
+						else if (isValid(i,j) && gridArrayIsSelected[i,j] == false) { //add letter to wordbuffer
+							wordBuffer += gridArray[i,j];
+							pushButtonToStack(i,j);
+							gridArrayIsSelected[i,j] = !gridArrayIsSelected[i,j];
+						}
 
-					gridArrayIsSelected[i,j] = !gridArrayIsSelected[i,j];
+						
 
-					prevI = lastI;
-					prevJ = lastJ;
-					Debug.Log("Prev Selected: [" + prevI + "," + prevJ + "]");
-					lastI = i;
-					lastJ = j;
-					Debug.Log("Last Selected: [" + lastI + "," + lastJ + "]");
-			
+						/*
+						prevI = lastI;
+						prevJ = lastJ;
+						Debug.Log("Prev Selected: [" + prevI + "," + prevJ + "]");
+						lastI = i;
+						lastJ = j;
+						Debug.Log("Last Selected: [" + lastI + "," + lastJ + "]");
+						*/
 
 
-					/*
-					//move all elements down
-					for(int k = j; k > 0; k--){
-						gridArray[i,k] = gridArray[i,k-1];
-					}
-					//add new letter at top of column
-					gridArray[i,0] = getLetter();
-					*/
+						/*
+						//move all elements down
+						for(int k = j; k > 0; k--){
+							gridArray[i,k] = gridArray[i,k-1];
+						}
+						//add new letter at top of column
+						gridArray[i,0] = getLetter();
+						*/
+					//}
 				}
 			}
 		}
@@ -175,37 +193,85 @@ public class BookManagerScript : MonoBehaviour {
 		}
 	}
 
-	bool generateValidZone(int row, int col){
+
+
+	//check if the last pushed button is within one space
+	bool isValid(int row, int col){
+		//first letter is always valid
+		if (firstLetterSelected == false){
+			Debug.Log("This is the first letter selected");
+			return true;
+		}
+
+		//set up the boundaries for check
 		int leftBound = 1;
 		int rightBound = 1;
 		int topBound = 1; 
 		int bottomBound = 1;
-
+		
 		if (row == 0){
 			leftBound = 0;
 		}
-
+		
 		if(row == 5) {
 			rightBound = 0;
 		}
-
+		
 		if (col == 0) {
 			topBound = 0;		
 		}
-
+		
 		if (col == 4) {
 			bottomBound = 0;		
 		}
 
+		//check if the previously selected letter is in the range
 		for (int i = (row - leftBound); i <= (row + rightBound); i++) {
 			for (int j = col - topBound; j <= col + bottomBound; j++){
-				if (gridArrayIsSelected[i,j] == true){
+				if (i == getLastI() && j == getLastJ()){
+					Debug.Log("[" + row + "," + col + "] is valid by virtue of [" + getLastI() + "," + getLastJ() + "]");
 					return true;
 				}
 			}
 		}
-
+		Debug.Log("[" + row + "," + col + "] is NOT valid");
 		return false;
+	}
+
+	void pushButtonToStack(int i, int j){
+		selectionStack [selectionStackIndex, 0] = i;
+		selectionStack [selectionStackIndex, 1] = j;
+		selectionStackIndex ++;
+
+		if (selectionStackIndex > 0) {
+			firstLetterSelected = true;		
+		}
+	}
+
+	void popButtonFromStack(){
+		selectionStackIndex --;
+		selectionStack [selectionStackIndex, 0] = -1;
+		selectionStack [selectionStackIndex, 1] = -1;
+
+		if (selectionStackIndex <= 0) {
+			firstLetterSelected = false;		
+		}
+	}
+
+	int getLastI(){
+		return selectionStack [selectionStackIndex - 1, 0];
+	}
+
+	int getLastJ(){
+		return selectionStack [selectionStackIndex - 1, 1];
+	}
+
+
+	void initSelectionStack(){
+		for (int i = 0; i<30; i++) {
+			selectionStack [i, 0] = -1;
+			selectionStack [i, 1] = -1;	
+		}
 	}
 
 	public void clearBuffer(){
