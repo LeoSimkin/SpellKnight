@@ -14,6 +14,7 @@ public class BookManagerScript : MonoBehaviour {
 	string allLetters = "AAAAAAAAABBCCDDDDEEEEEEEEEEEEFFGGGHHIIIIIIIIIJKLLLLMMNNNNNNOOOOOOOOPPQRRRRRRSSSSTTTTTTUUUUVVWWXYYZ";
 	GUIStyle buttonStyle;
 	bool firstLetterSelected = false;
+	int wordValue = 0;
 
 	int[,] selectionStack = new int[30, 2]; // stack to keep track of order of letters
 	int selectionStackIndex = 0;
@@ -53,17 +54,48 @@ public class BookManagerScript : MonoBehaviour {
 
 	void OnGUI () {
 		//buttonStyle = bookSkin.button;
-
+		//letterScoreTable = generateScoreTable ();
 
 		//letter display
 		GUI.skin = skin1;
-		skin1.box.fontSize = guiFontSize;
-		GUI.BeginGroup(new Rect (Screen.width /5, Screen.height/2 - bookTopBottomBuffer - letterDisplayHeight, Screen.width*3/5, letterDisplayHeight));
+		skin1.button.fontSize = guiFontSize;
+		GUI.BeginGroup(new Rect (Screen.width /5 - letterDisplayHeight, Screen.height/2 - bookTopBottomBuffer - letterDisplayHeight, Screen.width*3/5 + (2*letterDisplayHeight), letterDisplayHeight));
 
-		GUI.Box (new Rect (0, 0, Screen.width*3/5, letterDisplayHeight), wordBuffer);
+		if (GUI.Button (new Rect (0, 0, letterDisplayHeight, letterDisplayHeight), "<")) {
+			clearBuffer();	
+			clearBoolGrid();
+			initSelectionStack();		
+		}
+		if (GUI.Button (new Rect (letterDisplayHeight, 0, Screen.width * 3 / 5, letterDisplayHeight), wordBuffer) || GUI.Button (new Rect (letterDisplayHeight + Screen.width * 3 / 5, 0, letterDisplayHeight, letterDisplayHeight), ">")) {
+			if (dictionary.GetComponent<Dictionary>().contains(wordBuffer)){//dictionary.contains(wordBuffer)){
+				// can consolidate following code into a clearWord function
+				wordValue = getWordScore(wordBuffer);
+				Debug.Log ("Word Score = " + wordValue);
+				clearBuffer();
+				for (int i = 0; i < 6; i++) {
+					for (int j = 0; j < 5; j++){
+						if (gridArrayIsSelected[i,j] == true) {
+							//move all elements down
+							for(int k = j; k > 0; k--){
+								gridArray[i,k] = gridArray[i,k-1];
+							}
+							//add new letter at top of column
+							gridArray[i,0] = getLetter();
+						}
+					}
+				}
+				clearBoolGrid ();
+			}else{
+				//placeholder for failed word effect
+				wordBuffer = "NO";
+				clearBoolGrid();
+			}
+			initSelectionStack();		
+		}
+
 
 		GUI.EndGroup ();
-
+		/*
 		//temporary control buttons
 		GUI.BeginGroup (new Rect (Screen.width/4, 100, Screen.width/2, 100));
 		if (GUI.Button (new Rect (0, 0, 100, 100), "Clear")) {
@@ -96,7 +128,7 @@ public class BookManagerScript : MonoBehaviour {
 			initSelectionStack();
 		}
 		GUI.EndGroup ();
-
+		*/
 		       
 
 
@@ -128,24 +160,20 @@ public class BookManagerScript : MonoBehaviour {
 				//specific letter button
 				if(GUI.Button (new Rect (10 + (i * (buttonSize+10)), bookTopBottomBuffer + (j * (buttonSize+10)) , buttonSize, buttonSize), gridArray[i,j].ToString(), buttonStyle )){
 
-					//append element to wordBuffer
+					//remove or send to wordbuffer
 					if(gridArrayIsSelected[i,j] == true){ //remove last letter from word buffer
 
 						if(i == getLastI() && j == getLastJ()){
 							wordBuffer = wordBuffer.Remove(wordBuffer.Length - 1, 1);
 							popButtonFromStack();
 							gridArrayIsSelected[i,j] = !gridArrayIsSelected[i,j];
-
 						}
-
 					}
 					else if (isValid(i,j) && gridArrayIsSelected[i,j] == false) { //add letter to wordbuffer
 						wordBuffer += gridArray[i,j];
 						pushButtonToStack(i,j);
 						gridArrayIsSelected[i,j] = !gridArrayIsSelected[i,j];
-
 					}
-
 				}
 			}
 		}
@@ -264,6 +292,42 @@ public class BookManagerScript : MonoBehaviour {
 		}
 		selectionStackIndex = 0;
 		firstLetterSelected = false;
+	}
+
+	int getWordScore(string word){
+		int wordScore = 0;
+		for (int i = 0; i < word.Length; i ++){
+			wordScore += getLetterScore(word[i]);
+		}
+		return wordScore;
+	}
+
+	int getLetterScore(char letter){
+		//Debug.Log ("getLetterScore");
+		int letterScore = 0;
+		if( letter == 'E' || letter =='A' || letter == 'I' || letter == 'L' || letter == 'N' || letter == 'O' || letter == 'R' || letter == 'S' || letter == 'T' || letter == 'U'){
+			letterScore = 1;
+		}
+		else if (letter == 'D' || letter == 'G'){
+			letterScore = 2;
+		}
+		else if (letter == 'B' || letter == 'C' || letter == 'M' || letter == 'P'){
+			letterScore = 3;
+		}
+		else if (letter == 'F' || letter == 'H' || letter == 'V' || letter == 'W' || letter == 'Y'){
+			letterScore = 4;
+		}
+		else if (letter == 'K'){
+			letterScore = 5;
+		}
+		else if (letter == 'J' || letter == 'X'){
+			letterScore = 8;
+		}
+		else if (letter == 'Z' || letter == 'Q'){
+			letterScore = 10;
+		}
+		//Debug.Log ("letter score = " + letterScore);
+		return letterScore;
 	}
 
 	public void clearBuffer(){
