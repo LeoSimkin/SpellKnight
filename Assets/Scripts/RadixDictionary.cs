@@ -5,7 +5,7 @@ using System.Diagnostics;
 using System.IO;
 using System.Text.RegularExpressions;
 
-public class RadixDictionary : MonoBehaviour {
+public class RadixDictionaryCopy : MonoBehaviour {
 	private Dictionary<char, Node> roots = new Dictionary<char, Node>(26);
 
 

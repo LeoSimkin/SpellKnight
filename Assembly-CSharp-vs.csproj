@@ -48,6 +48,7 @@
   <ItemGroup>
      <Compile Include="Assets\Scripts\BookManagerScript.cs" />
      <Compile Include="Assets\Scripts\Dictionary.cs" />
+     <Compile Include="Assets\Scripts\DictionaryManagerScript.cs" />
      <Compile Include="Assets\Scripts\RadixDictionary.cs" />
      <None Include="Assets\Resources\wordlist.txt" />
   </ItemGroup>

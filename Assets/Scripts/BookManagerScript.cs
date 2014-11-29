@@ -72,8 +72,8 @@ public class BookManagerScript : MonoBehaviour {
 			initSelectionStack();
 		}
 		if (GUI.Button (new Rect (Screen.width/2 - 100, 0, 100, 100), "Submit")) {
-			Debug.Log ("Dictionary contains " + wordBuffer + "?: " + dictionary.GetComponent<RadixDictionary>().Contains(wordBuffer));
-			if (dictionary.GetComponent<RadixDictionary>().Contains(wordBuffer)){//dictionary.contains(wordBuffer)){
+			Debug.Log ("Dictionary contains " + wordBuffer + "?: " + dictionary.GetComponent<DictionaryManagerScript>().Contains(wordBuffer));
+			if (dictionary.GetComponent<DictionaryManagerScript>().Contains(wordBuffer)){//dictionary.contains(wordBuffer)){
 				// can consolidate following code into a clearWord function
 				clearBuffer();
 				for (int i = 0; i < 6; i++) {
