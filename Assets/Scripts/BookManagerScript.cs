@@ -67,7 +67,8 @@ public class BookManagerScript : MonoBehaviour {
 			initSelectionStack();		
 		}
 		if (GUI.Button (new Rect (letterDisplayHeight, 0, Screen.width * 3 / 5, letterDisplayHeight), wordBuffer) || GUI.Button (new Rect (letterDisplayHeight + Screen.width * 3 / 5, 0, letterDisplayHeight, letterDisplayHeight), ">")) {
-			if (dictionary.GetComponent<Dictionary>().contains(wordBuffer)){//dictionary.contains(wordBuffer)){
+			Debug.Log ("Word in dictionary?: " + dictionary.GetComponent<DictionaryManagerScript>().Contains(wordBuffer));
+			if (dictionary.GetComponent<DictionaryManagerScript>().Contains(wordBuffer)){//dictionary.contains(wordBuffer)){
 				// can consolidate following code into a clearWord function
 				wordValue = getWordScore(wordBuffer);
 				Debug.Log ("Word Score = " + wordValue);
