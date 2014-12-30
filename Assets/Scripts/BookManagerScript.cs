@@ -6,6 +6,7 @@ public class BookManagerScript : MonoBehaviour {
 	bool bookStateGrid = false; // False = Map, True = grid 
 	char[,] gridArray = new char[6,5]; // [0,0] being top left corner, [5,4] being bottom right
 	bool[,] gridArrayIsSelected = new bool[6, 5]; //if true, the letter has been selected and should be glowing
+	float[,] currentJ = new float[6, 5]; // keeps track of current button's vertical position
 
 	string wordBuffer = ""; // letters go here to build a word.
 	float buttonSize = 0f;
@@ -158,6 +159,11 @@ public class BookManagerScript : MonoBehaviour {
 				else{
 					buttonStyle = bookSkin.button;
 				}
+
+				//set up the j value of the button so it can slide down
+				float vertPos_Desired = j * (buttonSize + 10);
+
+
 				//specific letter button
 				if(GUI.Button (new Rect (10 + (i * (buttonSize+10)), bookTopBottomBuffer + (j * (buttonSize+10)) , buttonSize, buttonSize), gridArray[i,j].ToString(), buttonStyle )){
 
@@ -192,7 +198,8 @@ public class BookManagerScript : MonoBehaviour {
 	void populateGrid(){
 		for (int i = 0; i<6; i++) {
 			for (int j = 0; j<5; j++) {
-					gridArray [i, j] = getLetter ();
+				gridArray [i, j] = getLetter ();
+				currentJ [i,j] = j * (buttonSize + 10);
 			}
 		}
 	}
